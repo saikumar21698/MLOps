@@ -1,14 +1,3 @@
-# FROM python:3.10
-
-# WORKDIR /app
-
-# COPY requirements.txt requirements.txt
-
-# RUN python -m pip install --no-cache-dir -r requirements.txt
-
-# COPY ./app /app
-
-# CMD ["uvicorn", "app.main:app", "--host", "0.0.0.0", "--port", "8000"]
 # Stage 1: Build stage with all dependencies
 FROM python:3.10-slim as build
 
@@ -58,4 +47,4 @@ COPY ./app /app
 EXPOSE 8000
 
 # Command to run the application
-CMD ["uvicorn", "app.main:app", "--host", "0.0.0.0", "--port", "8000"]
+CMD ["/app/venv/bin/uvicorn", "app.main:app", "--host", "0.0.0.0", "--port", "8000"]
