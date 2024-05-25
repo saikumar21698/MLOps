@@ -14,8 +14,7 @@ RUN pip install --no-cache-dir -r requirements.txt
 RUN pip install --no-cache-dir transformers torch
 
 # This command downloads the tokenizer and model during the Docker image build and saves them locally to /app/llama8b.
-RUN python -c "\
-import logging; \
+RUN python -c "import logging; \
 logging.basicConfig(level=logging.INFO); \
 from transformers import AutoTokenizer, AutoModelForCausalLM; \
 try: \
@@ -29,10 +28,6 @@ try: \
 except Exception as e: \
     logging.error(f'Error downloading the model: {e}'); \
     raise"
-
-# Update the paths in the main.py file to load the model and tokenizer from the saved local directory instead of downloading them during each container start.
-RUN sed -i "s|AutoTokenizer.from_pretrained('Llama-3B')|AutoTokenizer.from_pretrained('/app/llama8b')|g" main.py
-RUN sed -i "s|AutoModelForCausalLM.from_pretrained('Llama-3B')|AutoModelForCausalLM.from_pretrained('/app/llama8b')|g" main.py
 
 # Exposes port 8000, which is the default port FastAPI will run on inside the container.
 EXPOSE 8000
