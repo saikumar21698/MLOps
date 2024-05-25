@@ -1,50 +1,26 @@
-# Stage 1: Build stage with all dependencies
-FROM python:3.10-slim as build
+# Use the official Python image.
+FROM python:3.9-slim
 
-# Install system dependencies
-RUN apt-get update && apt-get install -y --no-install-recommends \
-    gcc \
-    g++ \
-    libgl1 \
-    libglib2.0-0 \
-    libsm6 \
-    libxext6 \
-    libxrender-dev \
-    libgl1-mesa-glx \
-    libglib2.0-dev \
-    libsm6 \
-    libxext6 \
-    libxrender1
-
-# Set the working directory
+# Create a working directory.
 WORKDIR /app
 
-# Upgrade pip and install virtualenv
-RUN python -m pip install --upgrade pip && pip install virtualenv
+# Copy the current directory contents into the container at /app
+COPY . .
 
-# Create and activate virtual environment
-RUN python -m virtualenv venv
-ENV PATH="/app/venv/bin:$PATH"
-
-# Copy requirements and install dependencies
-COPY requirements.txt .
+# Install dependencies.
 RUN pip install --no-cache-dir -r requirements.txt
 
-# Stage 2: Final stage with only necessary components
-FROM python:3.10-slim
+# This command downloads the tokenizer and model during the Docker image build and saves them locally to /app/llama3.
+RUN python -c "from transformers import AutoTokenizer, AutoModelForCausalLM; \
+               AutoTokenizer.from_pretrained('Llama-3B').save_pretrained('/app/llama3'); \
+               AutoModelForCausalLM.from_pretrained('Llama-3B').save_pretrained('/app/llama3')"
 
-# Set the working directory
-WORKDIR /app
+# These commands update the paths in the main.py file to load the model and tokenizer from the saved local directory instead of downloading them during each container start.
+RUN sed -i "s|AutoTokenizer.from_pretrained('Llama-3B')|AutoTokenizer.from_pretrained('/app/llama3')|g" main.py
+RUN sed -i "s|AutoModelForCausalLM.from_pretrained('Llama-3B')|AutoModelForCausalLM.from_pretrained('/app/llama3')|g" main.py
 
-# Copy the virtual environment from the build stage
-COPY --from=build /app/venv /app/venv
-ENV PATH="/app/venv/bin:$PATH"
-
-# Copy the application code
-COPY ./app /app
-
-# Expose the port your application runs on
+# Exposes port 8000, which is the default port FastAPI will run on inside the container.
 EXPOSE 8000
 
-# Command to run the application
-CMD ["/app/venv/bin/uvicorn", "app.main:app", "--host", "0.0.0.0", "--port", "8000"]
+# The command runs the FastAPI application using Uvicorn at host 0.0.0.0 on port 8000.
+CMD ["uvicorn", "main:app", "--host", "0.0.0.0", "--port", "8000"]
