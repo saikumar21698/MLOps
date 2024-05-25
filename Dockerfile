@@ -11,5 +11,5 @@ RUN mkdir -p /root/.huggingface/
 RUN echo "url: https://huggingface.co" > /root/.huggingface/transformers-cli.yaml && \
     echo "token: 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" >> /root/.huggingface/transformers-cli.yaml
 #This command copies the Python code (app.py) from the local filesystem into the Docker container, specifically to the /app directory within the container.  
-COPY ./app.py /app/app.py
+COPY /app /app
 #The copied Python code (app.py) would be executed when the container is started, as it contains the FastAPI application logic.
