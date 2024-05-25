@@ -1,6 +1,6 @@
 from fastapi import FastAPI
 from transformers import AutoTokenizer, AutoModelForCausalLM
-
+#initialize the instance
 app = FastAPI()
 
 tokenizer = AutoTokenizer.from_pretrained("meta-llama/Meta-Llama-3-8B")
