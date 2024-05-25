@@ -10,10 +10,12 @@ COPY . .
 # Install dependencies.
 RUN pip install --no-cache-dir -r requirements.txt
 
-# This command downloads the tokenizer and model during the Docker image build and saves them locally to /app/llama3.
-RUN python -c "from transformers import AutoTokenizer, AutoModelForCausalLM; \
+# Download and save the tokenizer and model if they don't exist in the cache
+RUN if [ ! -d "/app/llama3" ]; then \
+        python -c "from transformers import AutoTokenizer, AutoModelForCausalLM; \
                AutoTokenizer.from_pretrained('Llama-3B').save_pretrained('/app/llama3'); \
-               AutoModelForCausalLM.from_pretrained('Llama-3B').save_pretrained('/app/llama3')"
+               AutoModelForCausalLM.from_pretrained('Llama-3B').save_pretrained('/app/llama3')"; \
+    fi
 
 # These commands update the paths in the main.py file to load the model and tokenizer from the saved local directory instead of downloading them during each container start.
 RUN sed -i "s|AutoTokenizer.from_pretrained('Llama-3B')|AutoTokenizer.from_pretrained('/app/llama3')|g" main.py
