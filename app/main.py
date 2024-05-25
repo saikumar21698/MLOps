@@ -1,21 +1,14 @@
-from fastapi import FastAPI, Request
+from fastapi import FastAPI
 from transformers import AutoTokenizer, AutoModelForCausalLM
 
 app = FastAPI()
 
-# Load the tokenizer and model from the specified directory
-tokenizer = AutoTokenizer.from_pretrained("/app/meta_llama_3_8b")
-model = AutoModelForCausalLM.from_pretrained("/app/meta_llama_3_8b")
+tokenizer = AutoTokenizer.from_pretrained("meta-llama/Meta-Llama-3-8B")
+model = AutoModelForCausalLM.from_pretrained("meta-llama/Meta-Llama-3-8B")
 
-@app.post("/inference")
-async def get_inference(request: Request):
-    data = await request.json()
-    input_text = data.get("text")
-    if not input_text:
-        return {"error": "Please provide text for inference"}
-    
-    inputs = tokenizer(input_text, return_tensors="pt")
-    outputs = model.generate(**inputs)
-    response_text = tokenizer.decode(outputs[0], skip_special_tokens=True)
-    
-    return {"response": response_text}
+
+@app.post("/generate/")
+async def generate_text(prompt: str):
+    inputs = tokenizer(prompt, return_tensors="pt", max_length=1024, truncation=True)
+    output = model.generate(**inputs, max_length=150)
+    return tokenizer.decode(output[0], skip_special_tokens=True)
