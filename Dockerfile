@@ -13,23 +13,16 @@ RUN pip install --no-cache-dir -r requirements.txt
 # Install transformers and torch before downloading the model.
 RUN pip install --no-cache-dir transformers torch
 
-# This command downloads the tokenizer and model during the Docker image build and saves them locally to /app/llama8b.
-RUN python -c "import logging; \
-logging.basicConfig(level=logging.INFO); \
-from transformers import AutoTokenizer, AutoModelForCausalLM; \
-try: \
-    logging.info('Downloading tokenizer...'); \
-    tokenizer = AutoTokenizer.from_pretrained('Llama-8B'); \
-    tokenizer.save_pretrained('/app/llama8b'); \
-    logging.info('Downloading model...'); \
-    model = AutoModelForCausalLM.from_pretrained('Llama-8B'); \
-    model.save_pretrained('/app/llama8b'); \
-    logging.info('Model and tokenizer downloaded and saved successfully.'); \
-except Exception as e: \
-    logging.error(f'Error downloading the model: {e}'); \
-    raise"
+# Copy the script that downloads the model and tokenizer.
+COPY download_model.sh /app/download_model.sh
 
-# Exposes port 8000, which is the default port FastAPI will run on inside the container.
+# Make the script executable
+RUN chmod +x /app/download_model.sh
+
+# Run the script to download the tokenizer and model.
+RUN /app/download_model.sh
+
+# Expose port 8000, which is the default port FastAPI will run on inside the container.
 EXPOSE 8000
 
 # The command runs the FastAPI application using Uvicorn at host 0.0.0.0 on port 8000.
