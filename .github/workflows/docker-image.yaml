@@ -27,4 +27,4 @@ jobs:
           context: .
           file: ./Dockerfile
           push: true
-          tags: ${{ secrets.DOCKER_USERNAME }}/fastapi-llama3:v3
+          tags: ${{ secrets.DOCKER_USERNAME }}/fastapi-llama3:v4
