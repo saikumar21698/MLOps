@@ -5,8 +5,8 @@ import torch
 app = FastAPI()
 
 # Load the tokenizer and model from the specified directory
-tokenizer = AutoTokenizer.from_pretrained("/app/llama8b")
-model = AutoModelForCausalLM.from_pretrained("/app/llama8b")
+tokenizer = AutoTokenizer.from_pretrained("/app/gpt2")
+model = AutoModelForCausalLM.from_pretrained("/app/gpt2")
 
 @app.post("/inference")
 async def get_inference(request: Request):
